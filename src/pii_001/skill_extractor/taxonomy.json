@@ -1,0 +1,218 @@
+[
+  {
+    "skill_id": "python",
+    "canonical_name": "Python",
+    "category": "programming_languages",
+    "aliases": ["python", "py", "python3"]
+  },
+  {
+    "skill_id": "javascript",
+    "canonical_name": "JavaScript",
+    "category": "programming_languages",
+    "aliases": ["javascript", "js", "ecmascript"]
+  },
+  {
+    "skill_id": "typescript",
+    "canonical_name": "TypeScript",
+    "category": "programming_languages",
+    "aliases": ["typescript", "ts"]
+  },
+  {
+    "skill_id": "java",
+    "canonical_name": "Java",
+    "category": "programming_languages",
+    "aliases": ["java", "java8", "java11", "java17"]
+  },
+  {
+    "skill_id": "cpp",
+    "canonical_name": "C++",
+    "category": "programming_languages",
+    "aliases": ["c++", "cpp", "c plus plus"]
+  },
+  {
+    "skill_id": "csharp",
+    "canonical_name": "C#",
+    "category": "programming_languages",
+    "aliases": ["c#", "csharp", "c sharp"]
+  },
+  {
+    "skill_id": "golang",
+    "canonical_name": "Go",
+    "category": "programming_languages",
+    "aliases": ["go", "golang"]
+  },
+  {
+    "skill_id": "rust",
+    "canonical_name": "Rust",
+    "category": "programming_languages",
+    "aliases": ["rust"]
+  },
+  {
+    "skill_id": "sql",
+    "canonical_name": "SQL",
+    "category": "programming_languages",
+    "aliases": ["sql", "structured query language"]
+  },
+  {
+    "skill_id": "fastapi",
+    "canonical_name": "FastAPI",
+    "category": "frameworks_libraries",
+    "aliases": ["fastapi", "fast api"]
+  },
+  {
+    "skill_id": "django",
+    "canonical_name": "Django",
+    "category": "frameworks_libraries",
+    "aliases": ["django", "django rest framework", "drf"]
+  },
+  {
+    "skill_id": "flask",
+    "canonical_name": "Flask",
+    "category": "frameworks_libraries",
+    "aliases": ["flask"]
+  },
+  {
+    "skill_id": "react",
+    "canonical_name": "React",
+    "category": "frameworks_libraries",
+    "aliases": ["react", "reactjs", "react.js"]
+  },
+  {
+    "skill_id": "nextjs",
+    "canonical_name": "Next.js",
+    "category": "frameworks_libraries",
+    "aliases": ["next.js", "nextjs", "next js"]
+  },
+  {
+    "skill_id": "pytorch",
+    "canonical_name": "PyTorch",
+    "category": "frameworks_libraries",
+    "aliases": ["pytorch", "torch"]
+  },
+  {
+    "skill_id": "tensorflow",
+    "canonical_name": "TensorFlow",
+    "category": "frameworks_libraries",
+    "aliases": ["tensorflow", "tf", "keras"]
+  },
+  {
+    "skill_id": "scikit_learn",
+    "canonical_name": "Scikit-Learn",
+    "category": "frameworks_libraries",
+    "aliases": ["scikit-learn", "scikit learn", "sklearn"]
+  },
+  {
+    "skill_id": "pandas",
+    "canonical_name": "Pandas",
+    "category": "frameworks_libraries",
+    "aliases": ["pandas"]
+  },
+  {
+    "skill_id": "numpy",
+    "canonical_name": "NumPy",
+    "category": "frameworks_libraries",
+    "aliases": ["numpy"]
+  },
+  {
+    "skill_id": "postgresql",
+    "canonical_name": "PostgreSQL",
+    "category": "databases_storage",
+    "aliases": ["postgresql", "postgres", "pg", "postgre"]
+  },
+  {
+    "skill_id": "mysql",
+    "canonical_name": "MySQL",
+    "category": "databases_storage",
+    "aliases": ["mysql"]
+  },
+  {
+    "skill_id": "mongodb",
+    "canonical_name": "MongoDB",
+    "category": "databases_storage",
+    "aliases": ["mongodb", "mongo"]
+  },
+  {
+    "skill_id": "redis",
+    "canonical_name": "Redis",
+    "category": "databases_storage",
+    "aliases": ["redis"]
+  },
+  {
+    "skill_id": "docker",
+    "canonical_name": "Docker",
+    "category": "cloud_devops",
+    "aliases": ["docker", "docker compose", "containerization"]
+  },
+  {
+    "skill_id": "kubernetes",
+    "canonical_name": "Kubernetes",
+    "category": "cloud_devops",
+    "aliases": ["kubernetes", "k8s"]
+  },
+  {
+    "skill_id": "aws",
+    "canonical_name": "AWS",
+    "category": "cloud_devops",
+    "aliases": ["aws", "amazon web services", "ec2", "s3"]
+  },
+  {
+    "skill_id": "azure",
+    "canonical_name": "Azure",
+    "category": "cloud_devops",
+    "aliases": ["azure", "microsoft azure"]
+  },
+  {
+    "skill_id": "gcp",
+    "canonical_name": "GCP",
+    "category": "cloud_devops",
+    "aliases": ["gcp", "google cloud platform", "google cloud"]
+  },
+  {
+    "skill_id": "ci_cd",
+    "canonical_name": "CI/CD",
+    "category": "cloud_devops",
+    "aliases": ["ci/cd", "ci-cd", "continuous integration", "github actions"]
+  },
+  {
+    "skill_id": "machine_learning",
+    "canonical_name": "Machine Learning",
+    "category": "ai_ml_nlp",
+    "aliases": ["machine learning", "ml"]
+  },
+  {
+    "skill_id": "nlp",
+    "canonical_name": "NLP",
+    "category": "ai_ml_nlp",
+    "aliases": ["nlp", "natural language processing", "spacy"]
+  },
+  {
+    "skill_id": "rag",
+    "canonical_name": "RAG",
+    "category": "ai_ml_nlp",
+    "aliases": ["rag", "retrieval augmented generation", "retrieval-augmented generation"]
+  },
+  {
+    "skill_id": "git",
+    "canonical_name": "Git",
+    "category": "development_tools",
+    "aliases": ["git", "github", "version control"]
+  },
+  {
+    "skill_id": "rest_api",
+    "canonical_name": "REST API",
+    "category": "methodologies",
+    "aliases": ["rest api", "restful api", "rest APIs", "restful apis"]
+  },
+  {
+    "skill_id": "microservices",
+    "canonical_name": "Microservices",
+    "category": "methodologies",
+    "aliases": ["microservices", "microservice architecture"]
+  },
+  {
+    "skill_id": "system_design",
+    "canonical_name": "System Design",
+    "category": "methodologies",
+    "aliases": ["system design", "distributed systems", "system architecture"]
+  }
+]

@@ -12,36 +12,36 @@ from pii_001.resume_parser.schemas import (
     DetectedSection,
     ExtractedContactInfo,
 )
-from pii_001.resume_parser.text_cleaner import TextCleaner
+from pii_001.resume_parser.text_cleaner import TextCleaner, BULLET_PATTERN
 
 # Standard regex mappings for standard and expanded resume sections
 SECTION_PATTERNS: Dict[SectionType, List[re.Pattern]] = {
     SectionType.SUMMARY: [
-        re.compile(r"^(summary|professional summary|executive summary|profile|profile summary|executive profile|about me|about|objective|career objective|career summary)\b", re.I),
+        re.compile(r"^(summary|professional summary|executive summary|profile|profile summary|executive profile|about me|about|objective|career objective|career summary)$", re.I),
     ],
     SectionType.WORK_EXPERIENCE: [
-        re.compile(r"^(work experience|professional experience|employment history|experience|work history|career history|professional background|internships|relevant experience)\b", re.I),
+        re.compile(r"^(work experience|professional experience|employment history|experience|work history|career history|professional background|internships|relevant experience)$", re.I),
     ],
     SectionType.EDUCATION: [
-        re.compile(r"^(education|academic background|qualifications|academic history|scholastic achievements|education & credentials)\b", re.I),
+        re.compile(r"^(education|academic background|qualifications|academic history|scholastic achievements|education & credentials)$", re.I),
     ],
     SectionType.SKILLS: [
-        re.compile(r"^(skills|technical skills|technical proficiency|core competencies|key skills|skills & tools|skills & abilities|technologies|tools & technologies)\b", re.I),
+        re.compile(r"^(skills|technical skills|technical proficiency|core competencies|key skills|skills & tools|skills & abilities|technologies|tools & technologies)$", re.I),
     ],
     SectionType.PROJECTS: [
-        re.compile(r"^(projects|key projects|academic projects|personal projects|featured projects|portfolio)\b", re.I),
+        re.compile(r"^(projects|key projects|academic projects|personal projects|featured projects|portfolio)$", re.I),
     ],
     SectionType.CERTIFICATIONS: [
-        re.compile(r"^(certifications|licenses & certifications|certifications & licenses|certificates|licenses|certifications & training)\b", re.I),
+        re.compile(r"^(certifications|licenses & certifications|certifications & licenses|certificates|licenses|certifications & training)$", re.I),
     ],
     SectionType.LANGUAGES: [
-        re.compile(r"^(languages|language proficiency|languages spoken)\b", re.I),
+        re.compile(r"^(languages|language proficiency|languages spoken)$", re.I),
     ],
     SectionType.AWARDS: [
-        re.compile(r"^(awards|honors|honors & awards|achievements|key achievements|scholarships|awards & honors)\b", re.I),
+        re.compile(r"^(awards|honors|honors & awards|achievements|key achievements|scholarships|awards & honors)$", re.I),
     ],
     SectionType.PUBLICATIONS: [
-        re.compile(r"^(publications|research papers|papers|published works)\b", re.I),
+        re.compile(r"^(publications|research papers|papers|published works)$", re.I),
     ],
 }
 
@@ -65,8 +65,13 @@ class RuleBasedSectionDetector:
         header_matches: List[Tuple[int, SectionType, str]] = []
 
         for idx, line in enumerate(lines):
+            raw_line = line.strip()
+            # If line is bullet point or contains commas (e.g. inline skill list), it's not a top-level section header
+            if BULLET_PATTERN.search(line) or "," in raw_line:
+                continue
+
             clean_line = TextCleaner.normalize_header(line)
-            if not clean_line or len(clean_line) > 60:
+            if not clean_line or len(clean_line) > 50:
                 continue
 
             matched_type = self._match_section_header(clean_line)
