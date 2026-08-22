@@ -1,7 +1,8 @@
 """
-Rule-Based Section Detector for PII-001 Baseline (SP-001)
+Rule-Based Section Detector for PII-001 Baseline (SP-001 Increment B)
 
-Performs deterministic line-by-line section boundary detection and heuristic contact info extraction.
+Performs deterministic line-by-line section boundary detection, expanded header taxonomy matching,
+and contact info extraction.
 """
 
 import re
@@ -11,26 +12,36 @@ from pii_001.resume_parser.schemas import (
     DetectedSection,
     ExtractedContactInfo,
 )
+from pii_001.resume_parser.text_cleaner import TextCleaner
 
-# Standard regex mappings for standard resume sections
+# Standard regex mappings for standard and expanded resume sections
 SECTION_PATTERNS: Dict[SectionType, List[re.Pattern]] = {
     SectionType.SUMMARY: [
-        re.compile(r"^(summary|professional summary|executive summary|profile|about me|objective|career objective)\b", re.I),
+        re.compile(r"^(summary|professional summary|executive summary|profile|profile summary|executive profile|about me|about|objective|career objective|career summary)\b", re.I),
     ],
     SectionType.WORK_EXPERIENCE: [
-        re.compile(r"^(work experience|professional experience|employment history|experience|work history|career history)\b", re.I),
+        re.compile(r"^(work experience|professional experience|employment history|experience|work history|career history|professional background|internships|relevant experience)\b", re.I),
     ],
     SectionType.EDUCATION: [
-        re.compile(r"^(education|academic background|qualifications|academic history|education & credentials)\b", re.I),
+        re.compile(r"^(education|academic background|qualifications|academic history|scholastic achievements|education & credentials)\b", re.I),
     ],
     SectionType.SKILLS: [
-        re.compile(r"^(skills|technical skills|core competencies|skills & abilities|skills & tools|technologies)\b", re.I),
+        re.compile(r"^(skills|technical skills|technical proficiency|core competencies|key skills|skills & tools|skills & abilities|technologies|tools & technologies)\b", re.I),
     ],
     SectionType.PROJECTS: [
-        re.compile(r"^(projects|key projects|academic projects|personal projects|featured projects)\b", re.I),
+        re.compile(r"^(projects|key projects|academic projects|personal projects|featured projects|portfolio)\b", re.I),
     ],
     SectionType.CERTIFICATIONS: [
-        re.compile(r"^(certifications|licenses & certifications|certifications & licenses|certificates)\b", re.I),
+        re.compile(r"^(certifications|licenses & certifications|certifications & licenses|certificates|licenses|certifications & training)\b", re.I),
+    ],
+    SectionType.LANGUAGES: [
+        re.compile(r"^(languages|language proficiency|languages spoken)\b", re.I),
+    ],
+    SectionType.AWARDS: [
+        re.compile(r"^(awards|honors|honors & awards|achievements|key achievements|scholarships|awards & honors)\b", re.I),
+    ],
+    SectionType.PUBLICATIONS: [
+        re.compile(r"^(publications|research papers|papers|published works)\b", re.I),
     ],
 }
 
@@ -40,14 +51,11 @@ URL_REGEX = re.compile(r"https?://[^\s]+|github\.com/[^\s]+|linkedin\.com/in/[^\
 
 
 class RuleBasedSectionDetector:
-    """Detects section boundaries and basic candidate contact info from raw resume text."""
+    """Detects section boundaries and candidate contact info from raw resume text."""
 
     def detect_sections(self, raw_text: str) -> Tuple[List[DetectedSection], List[SectionType]]:
         """
-        Segment raw text into a list of DetectedSection objects.
-        
-        Returns:
-            Tuple of (detected_sections_list, missing_critical_sections_list)
+        Segment raw text into a list of DetectedSection objects using expanded section patterns.
         """
         if not raw_text or not raw_text.strip():
             missing = [SectionType.WORK_EXPERIENCE, SectionType.EDUCATION, SectionType.SKILLS]
@@ -57,33 +65,27 @@ class RuleBasedSectionDetector:
         header_matches: List[Tuple[int, SectionType, str]] = []
 
         for idx, line in enumerate(lines):
-            clean_line = line.strip()
+            clean_line = TextCleaner.normalize_header(line)
             if not clean_line or len(clean_line) > 60:
-                # Section headers in resumes are usually concise (< 60 chars)
                 continue
 
-            # Strip trailing colon, dashes, or underline decorators
-            candidate_header = re.sub(r"[:\-_=]+$", "", clean_line).strip()
-
-            matched_type = self._match_section_header(candidate_header)
+            matched_type = self._match_section_header(clean_line)
             if matched_type:
                 header_matches.append((idx + 1, matched_type, clean_line))
 
         detected_sections: List[DetectedSection] = []
 
-        # If no explicit headers were detected, treat the entire document as UNKNOWN section
         if not header_matches:
             detected_sections.append(
                 DetectedSection(
                     section_type=SectionType.UNKNOWN,
                     heading_title="Document Body",
-                    content=raw_text.strip(),
+                    content=TextCleaner.clean_text(raw_text),
                     start_line=1,
                     end_line=len(lines),
                 )
             )
         else:
-            # If the text before the first section header contains content, classify as CONTACT_INFO / HEADER
             first_line_num = header_matches[0][0]
             if first_line_num > 1:
                 pre_header_content = "\n".join(lines[: first_line_num - 1]).strip()
@@ -92,13 +94,12 @@ class RuleBasedSectionDetector:
                         DetectedSection(
                             section_type=SectionType.CONTACT_INFO,
                             heading_title="Header / Contact Details",
-                            content=pre_header_content,
+                            content=TextCleaner.clean_text(pre_header_content),
                             start_line=1,
                             end_line=first_line_num - 1,
                         )
                     )
 
-            # Build section boundaries
             for i, (line_num, sec_type, title) in enumerate(header_matches):
                 if i + 1 < len(header_matches):
                     next_line_num = header_matches[i + 1][0]
@@ -108,7 +109,7 @@ class RuleBasedSectionDetector:
                     sec_lines = lines[line_num:]
                     end_line = len(lines)
 
-                sec_content = "\n".join(sec_lines).strip()
+                sec_content = TextCleaner.clean_text("\n".join(sec_lines))
                 detected_sections.append(
                     DetectedSection(
                         section_type=sec_type,
@@ -119,7 +120,6 @@ class RuleBasedSectionDetector:
                     )
                 )
 
-        # Check critical sections presence
         found_types = {sec.section_type for sec in detected_sections}
         critical_sections = [SectionType.WORK_EXPERIENCE, SectionType.EDUCATION, SectionType.SKILLS]
         missing_critical = [s for s in critical_sections if s not in found_types]
@@ -132,7 +132,6 @@ class RuleBasedSectionDetector:
         phones = PHONE_REGEX.findall(raw_text)
         urls = URL_REGEX.findall(raw_text)
 
-        # Format phone string if match found
         phone_str = None
         if phones:
             p = phones[0]
@@ -145,7 +144,7 @@ class RuleBasedSectionDetector:
         )
 
     def _match_section_header(self, text: str) -> Optional[SectionType]:
-        """Match a text line against known section patterns."""
+        """Match a text line against expanded section patterns."""
         for sec_type, patterns in SECTION_PATTERNS.items():
             for pat in patterns:
                 if pat.search(text):

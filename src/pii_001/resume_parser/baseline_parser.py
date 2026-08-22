@@ -1,7 +1,7 @@
 """
-Baseline Resume Parser Pipeline for PII-001 (SP-001)
+Baseline Resume Parser Pipeline for PII-001 (SP-001 Increment B)
 
-Main entry point orchestrating text extraction, section boundary detection, and diagnostic scoring.
+Main entry point orchestrating text extraction, section boundary detection, OCR diagnostics, and telemetry.
 """
 
 import time
@@ -15,6 +15,7 @@ from pii_001.resume_parser.schemas import (
 )
 from pii_001.resume_parser.pdf_extractor import PDFExtractorAdapter
 from pii_001.resume_parser.section_detector import RuleBasedSectionDetector
+from pii_001.resume_parser.text_cleaner import TextCleaner
 
 
 class BaselineResumeParser:
@@ -33,19 +34,27 @@ class BaselineResumeParser:
         start_time = time.perf_counter()
 
         raw_data, extraction_warnings = self.extractor.extract_from_file(path)
-        sections, missing_critical = self.detector.detect_sections(raw_data.raw_text)
-        contact_info = self.detector.extract_contact_info(raw_data.raw_text)
+        cleaned_text = TextCleaner.clean_text(raw_data.raw_text)
+
+        sections, missing_critical = self.detector.detect_sections(cleaned_text)
+        contact_info = self.detector.extract_contact_info(cleaned_text)
 
         elapsed_ms = (time.perf_counter() - start_time) * 1000.0
 
-        # Calculate heuristic confidence score
-        confidence = self._compute_confidence(raw_data.character_count, missing_critical, extraction_warnings)
+        requires_ocr = raw_data.page_count > 0 and len(cleaned_text.strip()) == 0
+        if requires_ocr:
+            extraction_warnings.append("Document appears to be a scanned image-only PDF; OCR engine recommended.")
+
+        confidence = self._compute_confidence(
+            len(cleaned_text), missing_critical, extraction_warnings, requires_ocr
+        )
 
         diagnostics = ParsingDiagnostics(
-            parser_version="0.1.0-baseline",
+            parser_version="0.2.0-baseline-sp001b",
             extraction_time_ms=round(elapsed_ms, 2),
             total_pages=raw_data.page_count,
-            total_characters=raw_data.character_count,
+            total_characters=len(cleaned_text),
+            requires_ocr=requires_ocr,
             warnings=extraction_warnings,
             missing_critical_sections=missing_critical,
             confidence_score=confidence,
@@ -54,7 +63,7 @@ class BaselineResumeParser:
         return NormalizedResumeDocument(
             document_id=str(uuid.uuid4()),
             source_filename=path.name,
-            raw_text=raw_data.raw_text,
+            raw_text=cleaned_text,
             contact_info=contact_info,
             sections=sections,
             diagnostics=diagnostics,
@@ -65,17 +74,27 @@ class BaselineResumeParser:
         start_time = time.perf_counter()
 
         raw_data, extraction_warnings = self.extractor.extract_from_bytes(pdf_bytes, filename=filename)
-        sections, missing_critical = self.detector.detect_sections(raw_data.raw_text)
-        contact_info = self.detector.extract_contact_info(raw_data.raw_text)
+        cleaned_text = TextCleaner.clean_text(raw_data.raw_text)
+
+        sections, missing_critical = self.detector.detect_sections(cleaned_text)
+        contact_info = self.detector.extract_contact_info(cleaned_text)
 
         elapsed_ms = (time.perf_counter() - start_time) * 1000.0
-        confidence = self._compute_confidence(raw_data.character_count, missing_critical, extraction_warnings)
+
+        requires_ocr = raw_data.page_count > 0 and len(cleaned_text.strip()) == 0
+        if requires_ocr:
+            extraction_warnings.append("Document appears to be a scanned image-only PDF; OCR engine recommended.")
+
+        confidence = self._compute_confidence(
+            len(cleaned_text), missing_critical, extraction_warnings, requires_ocr
+        )
 
         diagnostics = ParsingDiagnostics(
-            parser_version="0.1.0-baseline",
+            parser_version="0.2.0-baseline-sp001b",
             extraction_time_ms=round(elapsed_ms, 2),
             total_pages=raw_data.page_count,
-            total_characters=raw_data.character_count,
+            total_characters=len(cleaned_text),
+            requires_ocr=requires_ocr,
             warnings=extraction_warnings,
             missing_critical_sections=missing_critical,
             confidence_score=confidence,
@@ -84,7 +103,7 @@ class BaselineResumeParser:
         return NormalizedResumeDocument(
             document_id=str(uuid.uuid4()),
             source_filename=filename,
-            raw_text=raw_data.raw_text,
+            raw_text=cleaned_text,
             contact_info=contact_info,
             sections=sections,
             diagnostics=diagnostics,
@@ -94,17 +113,19 @@ class BaselineResumeParser:
         """Parse plain string text directly."""
         start_time = time.perf_counter()
 
-        sections, missing_critical = self.detector.detect_sections(text)
-        contact_info = self.detector.extract_contact_info(text)
+        cleaned_text = TextCleaner.clean_text(text)
+        sections, missing_critical = self.detector.detect_sections(cleaned_text)
+        contact_info = self.detector.extract_contact_info(cleaned_text)
 
         elapsed_ms = (time.perf_counter() - start_time) * 1000.0
-        confidence = self._compute_confidence(len(text), missing_critical, [])
+        confidence = self._compute_confidence(len(cleaned_text), missing_critical, [], False)
 
         diagnostics = ParsingDiagnostics(
-            parser_version="0.1.0-baseline",
+            parser_version="0.2.0-baseline-sp001b",
             extraction_time_ms=round(elapsed_ms, 2),
             total_pages=1,
-            total_characters=len(text),
+            total_characters=len(cleaned_text),
+            requires_ocr=False,
             warnings=[],
             missing_critical_sections=missing_critical,
             confidence_score=confidence,
@@ -113,21 +134,23 @@ class BaselineResumeParser:
         return NormalizedResumeDocument(
             document_id=str(uuid.uuid4()),
             source_filename=filename,
-            raw_text=text,
+            raw_text=cleaned_text,
             contact_info=contact_info,
             sections=sections,
             diagnostics=diagnostics,
         )
 
-    def _compute_confidence(self, char_count: int, missing_critical: list, warnings: list) -> float:
-        """Calculate simple deterministic heuristic confidence score."""
+    def _compute_confidence(self, char_count: int, missing_critical: list, warnings: list, requires_ocr: bool) -> float:
+        """Calculate deterministic heuristic confidence score."""
         score = 1.0
+        if requires_ocr:
+            return 0.0
+
         if char_count < 50:
             score -= 0.5
         elif char_count < 200:
             score -= 0.2
 
-        # Deduct 0.15 for each missing critical section (work, education, skills)
         score -= len(missing_critical) * 0.15
 
         if warnings:

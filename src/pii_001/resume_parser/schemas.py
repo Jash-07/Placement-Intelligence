@@ -1,5 +1,5 @@
 """
-Pydantic data contracts for PII-001 Resume Parser Baseline (SP-001)
+Pydantic data contracts for PII-001 Resume Parser Baseline (SP-001 Increment B)
 """
 
 from enum import Enum
@@ -15,6 +15,9 @@ class SectionType(str, Enum):
     SKILLS = "skills"
     PROJECTS = "projects"
     CERTIFICATIONS = "certifications"
+    LANGUAGES = "languages"
+    AWARDS = "awards"
+    PUBLICATIONS = "publications"
     UNKNOWN = "unknown"
 
 
@@ -42,6 +45,7 @@ class ParsingDiagnostics(BaseModel):
     extraction_time_ms: float = Field(description="Total processing time in milliseconds")
     total_pages: int = Field(description="Total pages processed")
     total_characters: int = Field(description="Total characters extracted")
+    requires_ocr: bool = Field(default=False, description="Flag indicating scanned image PDF needing OCR")
     warnings: List[str] = Field(default_factory=list, description="Warnings generated during parsing")
     missing_critical_sections: List[SectionType] = Field(
         default_factory=list, description="Standard sections not detected in resume"

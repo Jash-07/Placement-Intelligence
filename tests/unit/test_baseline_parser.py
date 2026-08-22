@@ -1,5 +1,5 @@
 """
-Unit tests for Baseline Resume Parser (SP-001)
+Unit tests for Baseline Resume Parser (SP-001 Increment B)
 """
 
 import io
@@ -11,6 +11,7 @@ from reportlab.pdfgen import canvas
 from pii_001.resume_parser.baseline_parser import BaselineResumeParser
 from pii_001.resume_parser.section_detector import RuleBasedSectionDetector
 from pii_001.resume_parser.pdf_extractor import PDFExtractorAdapter
+from pii_001.resume_parser.text_cleaner import TextCleaner
 from pii_001.resume_parser.schemas import SectionType, NormalizedResumeDocument
 
 
@@ -20,14 +21,60 @@ def generate_synthetic_pdf_bytes() -> bytes:
     c = canvas.Canvas(buffer, pagesize=letter)
     c.drawString(100, 750, "John Doe")
     c.drawString(100, 735, "Email: john.doe@example.com | Phone: +1-555-019-2831")
-    c.drawString(100, 700, "WORK EXPERIENCE")
-    c.drawString(100, 685, "Senior Developer at Tech Co (2021-Present)")
-    c.drawString(100, 650, "EDUCATION")
-    c.drawString(100, 635, "BS Computer Science, Tech University")
-    c.drawString(100, 600, "SKILLS")
-    c.drawString(100, 585, "Python, SQL, FastAPI, Docker")
+    c.drawString(100, 700, "TECHNICAL PROFICIENCY")
+    c.drawString(100, 685, "Python, SQL, FastAPI, Docker")
+    c.drawString(100, 650, "PROFESSIONAL BACKGROUND")
+    c.drawString(100, 635, "Senior Developer at Tech Co (2021-Present)")
+    c.drawString(100, 600, "ACADEMIC BACKGROUND")
+    c.drawString(100, 585, "BS Computer Science, Tech University")
+    c.drawString(100, 550, "HONORS & AWARDS")
+    c.drawString(100, 535, "Dean's List 2020-2024")
     c.save()
     return buffer.getvalue()
+
+
+def test_text_cleaner_bullet_stripping():
+    """Verify stripping of bullet glyphs and zero-width characters."""
+    raw_line = "  • Built REST APIs using Python & FastAPI  "
+    cleaned = TextCleaner.clean_line(raw_line)
+    assert cleaned == "Built REST APIs using Python & FastAPI"
+
+    multi_bullet = "▪ Lead engineer\n► Optimized SQL queries\n❖ Deployed on Docker"
+    cleaned_multi = TextCleaner.clean_text(multi_bullet)
+    assert "Lead engineer" in cleaned_multi
+    assert "Optimized SQL queries" in cleaned_multi
+    assert "Deployed on Docker" in cleaned_multi
+    assert "▪" not in cleaned_multi
+    assert "►" not in cleaned_multi
+
+
+def test_expanded_section_headers():
+    """Verify detection of non-standard section headers (Increment B expansion)."""
+    parser = BaselineResumeParser()
+    text = (
+        "Email: dev@example.com\n\n"
+        "EXECUTIVE SUMMARY\n"
+        "Experienced software architect.\n\n"
+        "TECHNICAL PROFICIENCY\n"
+        "Python, Docker, FastAPI\n\n"
+        "INTERNSHIPS\n"
+        "Software Intern at Startup X\n\n"
+        "SCHOLASTIC ACHIEVEMENTS\n"
+        "B.Tech in Computer Engineering\n\n"
+        "HONORS & AWARDS\n"
+        "1st Place Hackathon Winner\n\n"
+        "LANGUAGES SPOKEN\n"
+        "English, Spanish\n"
+    )
+    doc = parser.parse_raw_text(text, filename="expanded_headers.txt")
+    detected_types = {sec.section_type for sec in doc.sections}
+
+    assert SectionType.SUMMARY in detected_types
+    assert SectionType.SKILLS in detected_types
+    assert SectionType.WORK_EXPERIENCE in detected_types
+    assert SectionType.EDUCATION in detected_types
+    assert SectionType.AWARDS in detected_types
+    assert SectionType.LANGUAGES in detected_types
 
 
 def test_parse_raw_text_standard(sample_standard_resume_text: str):
@@ -36,7 +83,6 @@ def test_parse_raw_text_standard(sample_standard_resume_text: str):
     doc: NormalizedResumeDocument = parser.parse_raw_text(sample_standard_resume_text, filename="test_resume.txt")
 
     assert doc.source_filename == "test_resume.txt"
-    assert doc.raw_text == sample_standard_resume_text
     assert doc.diagnostics.total_characters > 500
 
     # Verify Contact Info Extraction
@@ -96,6 +142,7 @@ def test_parse_pdf_bytes():
     assert SectionType.WORK_EXPERIENCE in detected_types
     assert SectionType.EDUCATION in detected_types
     assert SectionType.SKILLS in detected_types
+    assert SectionType.AWARDS in detected_types
 
 
 def test_empty_pdf_bytes_handling():
