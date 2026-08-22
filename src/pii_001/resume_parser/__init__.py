@@ -11,6 +11,7 @@ from pii_001.resume_parser.schemas import (
 )
 from pii_001.resume_parser.pdf_extractor import PDFExtractorAdapter
 from pii_001.resume_parser.section_detector import RuleBasedSectionDetector
+from pii_001.resume_parser.text_cleaner import TextCleaner
 from pii_001.resume_parser.baseline_parser import BaselineResumeParser
 
 __all__ = [
@@ -21,5 +22,6 @@ __all__ = [
     "NormalizedResumeDocument",
     "PDFExtractorAdapter",
     "RuleBasedSectionDetector",
+    "TextCleaner",
     "BaselineResumeParser",
 ]
