@@ -1,5 +1,5 @@
 """
-Pytest configuration and synthetic resume fixtures for PII-001
+Pytest configuration and synthetic resume & JD fixtures for PII-001
 """
 
 import pytest
@@ -49,6 +49,30 @@ SUMMARY
 Passionate beginner coder looking for entry level software opportunities.
 """
 
+SAMPLE_BACKEND_ENGINEER_JD = """
+TechCorp Inc.
+Senior Backend Engineer
+
+JOB SUMMARY
+We are seeking an experienced Senior Backend Engineer to join our core platform engineering team. You will lead the design and implementation of high-throughput REST APIs and microservices.
+
+RESPONSIBILITIES
+- Architect, build, and maintain production backend microservices in Python and FastAPI.
+- Optimize complex database queries and database models in PostgreSQL.
+- Collaborate with frontend engineers to integrate REST APIs.
+
+MINIMUM QUALIFICATIONS
+- Minimum 4+ years of professional software engineering experience.
+- Strong proficiency in Python, FastAPI, and SQL.
+- Extensive experience working with PostgreSQL or relational databases.
+- Required: Solid understanding of REST API design and Microservices.
+
+PREFERRED QUALIFICATIONS
+- Experience with Docker and Kubernetes containerization is a plus.
+- Knowledge of Redis caching and AWS cloud infrastructure is preferred.
+- Familiarity with CI/CD automation pipelines is nice to have.
+"""
+
 
 @pytest.fixture
 def sample_standard_resume_text() -> str:
@@ -60,6 +84,12 @@ def sample_standard_resume_text() -> str:
 def sample_minimal_resume_text() -> str:
     """Fixture providing a minimal synthetic resume text with missing critical sections."""
     return SAMPLE_MINIMAL_RESUME
+
+
+@pytest.fixture
+def sample_backend_jd_text() -> str:
+    """Fixture providing a synthetic Senior Backend Engineer Job Description."""
+    return SAMPLE_BACKEND_ENGINEER_JD
 
 
 @pytest.fixture
