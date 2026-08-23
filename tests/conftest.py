@@ -1,5 +1,5 @@
 """
-Pytest configuration and synthetic resume & JD fixtures for PII-001
+Pytest configuration and synthetic resume, JD & RAG doc fixtures for PII-001
 """
 
 import pytest
@@ -73,6 +73,26 @@ PREFERRED QUALIFICATIONS
 - Familiarity with CI/CD automation pipelines is nice to have.
 """
 
+SAMPLE_COMPANY_PREP_DOC = """
+TechCorp Inc. Company & Interview Preparation Guide
+
+1. COMPANY OVERVIEW & CULTURE
+TechCorp Inc. is a leading enterprise cloud technology company specializing in high-throughput microservices, real-time analytics, and data security.
+We value technical excellence, system reliability, clean API design, and continuous integration.
+
+2. TECHNICAL INTERVIEW STRUCTURE
+The technical interview process consists of three core rounds:
+- Round 1: Coding & Data Structures (Focus on Python algorithm efficiency, space/time complexity).
+- Round 2: System Design & Architecture (Focus on designing scalable microservices, database indexing in PostgreSQL, caching strategies with Redis, and REST API contracts).
+- Round 3: Engineering Leadership & Cultural Fit (Focus on collaborative problem-solving, code reviews, and project ownership).
+
+3. COMMON SYSTEM DESIGN QUESTIONS
+Candidates preparing for Backend roles should be ready to answer:
+- How do you optimize slow database queries in PostgreSQL?
+- How do you handle database connection pooling and caching with Redis?
+- Explain the trade-offs between REST APIs and gRPC in microservices architectures.
+"""
+
 
 @pytest.fixture
 def sample_standard_resume_text() -> str:
@@ -90,6 +110,12 @@ def sample_minimal_resume_text() -> str:
 def sample_backend_jd_text() -> str:
     """Fixture providing a synthetic Senior Backend Engineer Job Description."""
     return SAMPLE_BACKEND_ENGINEER_JD
+
+
+@pytest.fixture
+def sample_company_prep_text() -> str:
+    """Fixture providing synthetic company interview prep background document."""
+    return SAMPLE_COMPANY_PREP_DOC
 
 
 @pytest.fixture
