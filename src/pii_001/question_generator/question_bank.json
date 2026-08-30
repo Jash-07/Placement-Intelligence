@@ -1,0 +1,119 @@
+[
+  {
+    "skill_id": "python",
+    "canonical_name": "Python",
+    "category": "technical_verification",
+    "difficulty": "mid",
+    "question_text": "Explain Python GIL (Global Interpreter Lock) and how multiprocessing differs from multithreading when executing CPU-bound vs I/O-bound workloads.",
+    "key_evaluation_points": [
+      "Mentions GIL impact on CPython single-threaded execution",
+      "Differentiates threading for I/O bounds vs multiprocessing for CPU bounds",
+      "Explains async/await concurrency primitives"
+    ],
+    "expected_answer_hints": ["GIL", "CPython", "multiprocessing", "asyncio", "I/O bound"]
+  },
+  {
+    "skill_id": "fastapi",
+    "canonical_name": "FastAPI",
+    "category": "technical_verification",
+    "difficulty": "mid",
+    "question_text": "How does FastAPI leverage Python type hints and Pydantic for request validation, and how do dependency injection (`Depends`) patterns enhance testability?",
+    "key_evaluation_points": [
+      "Explains Pydantic model parsing and validation error responses",
+      "Describes OpenAPI schema auto-generation",
+      "Demonstrates override dependencies in Pytest fixtures"
+    ],
+    "expected_answer_hints": ["Pydantic", "Depends", "Dependency Injection", "Starlette", "OpenAPI"]
+  },
+  {
+    "skill_id": "postgresql",
+    "canonical_name": "PostgreSQL",
+    "category": "technical_verification",
+    "difficulty": "senior",
+    "question_text": "Describe PostgreSQL B-Tree indexing mechanisms, explain EXPLAIN ANALYZE output interpretation, and discuss connection pooling under high concurrency.",
+    "key_evaluation_points": [
+      "Explains Sequential Scan vs Index Scan vs Bitmap Index Scan",
+      "Identifies unindexed foreign keys and N+1 query problems",
+      "Mentions PgBouncer or connection pool sizing strategies"
+    ],
+    "expected_answer_hints": ["EXPLAIN ANALYZE", "B-Tree", "Sequential Scan", "PgBouncer", "Connection Pool"]
+  },
+  {
+    "skill_id": "docker",
+    "canonical_name": "Docker",
+    "category": "technical_gap",
+    "difficulty": "mid",
+    "question_text": "What is the difference between a Docker image layer and a container layer? How do multi-stage builds optimize production image size and security?",
+    "key_evaluation_points": [
+      "Explains copy-on-write filesystem and read-only image layers",
+      "Demonstrates multi-stage Dockerfile syntax (builder stage vs runner stage)",
+      "Highlights running containers as non-root users"
+    ],
+    "expected_answer_hints": ["Multi-stage build", "Dockerfile", "Layer caching", "Non-root user"]
+  },
+  {
+    "skill_id": "kubernetes",
+    "canonical_name": "Kubernetes",
+    "category": "technical_gap",
+    "difficulty": "senior",
+    "question_text": "How do Kubernetes Deployments manage Pod rolling updates, and what role do Liveness, Readiness, and Startup probes play in maintaining service availability?",
+    "key_evaluation_points": [
+      "Differentiates Readiness probe (traffic routing) vs Liveness probe (container restart)",
+      "Explains ReplicaSet rolling update strategy",
+      "Discusses Resource limits and requests"
+    ],
+    "expected_answer_hints": ["Readiness probe", "Liveness probe", "RollingUpdate", "ReplicaSet"]
+  },
+  {
+    "skill_id": "redis",
+    "canonical_name": "Redis",
+    "category": "technical_gap",
+    "difficulty": "mid",
+    "question_text": "What eviction policies does Redis support under memory limits, and how would you implement a Cache-Aside pattern to prevent cache stampede?",
+    "key_evaluation_points": [
+      "Explains LRU / LFU eviction policies",
+      "Describes Cache-Aside pattern (Read through cache -> DB fallback)",
+      "Mentions mutex locking or probabilistic early expiration for cache stampedes"
+    ],
+    "expected_answer_hints": ["Cache-Aside", "LRU", "Eviction Policy", "Mutex lock", "TTL"]
+  },
+  {
+    "skill_id": "rest_api",
+    "canonical_name": "REST API",
+    "category": "technical_verification",
+    "difficulty": "mid",
+    "question_text": "How do you design idempotent RESTful endpoints, and what HTTP status codes and headers are appropriate for rate limiting and resource creation?",
+    "key_evaluation_points": [
+      "Defines idempotency for GET/PUT/DELETE vs non-idempotent POST",
+      "Uses 201 Created with Location header, 429 Too Many Requests with Retry-After",
+      "Explains API versioning strategies"
+    ],
+    "expected_answer_hints": ["Idempotency", "201 Created", "429 Too Many Requests", "Retry-After"]
+  },
+  {
+    "skill_id": "microservices",
+    "canonical_name": "Microservices",
+    "category": "system_design",
+    "difficulty": "senior",
+    "question_text": "In a distributed microservices architecture, how do you handle cross-service transactions while maintaining consistency (e.g. Saga pattern vs 2PC)?",
+    "key_evaluation_points": [
+      "Explains eventual consistency over strict 2-Phase Commit in microservices",
+      "Describes Saga choreography vs orchestration with compensating transactions",
+      "Mentions Outbox pattern and message queues (RabbitMQ/Kafka)"
+    ],
+    "expected_answer_hints": ["Saga pattern", "Eventual consistency", "Outbox pattern", "Compensating transaction"]
+  },
+  {
+    "skill_id": "system_design",
+    "canonical_name": "System Design",
+    "category": "system_design",
+    "difficulty": "senior",
+    "question_text": "Design a high-throughput placement analytics system handling 5,000 resume parsing requests per minute. Address queueing, database scaling, and rate limiting.",
+    "key_evaluation_points": [
+      "Uses asynchronous worker queues (Celery/Redis/RabbitMQ) for long-running PDF parsing",
+      "Implements horizontal worker scaling and rate limiting",
+      "Designs DB sharding or read-replicas for analytics queries"
+    ],
+    "expected_answer_hints": ["Celery", "RabbitMQ", "Read Replicas", "Async Workers", "Rate Limiting"]
+  }
+]

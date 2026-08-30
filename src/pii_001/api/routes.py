@@ -13,6 +13,8 @@ from pii_001.resume_parser.schemas import NormalizedResumeDocument
 from pii_001.jd_analyzer.jd_parser import JDParser
 from pii_001.jd_analyzer.schemas import NormalizedJobDescription
 from pii_001.report_schemas import SkillGapReport
+from pii_001.question_generator.generator import InterviewQuestionGenerator
+from pii_001.question_generator.schemas import GeneratedQuestionSet
 
 router = APIRouter(prefix="/api/v1", tags=["Placement Intelligence"])
 
@@ -99,3 +101,35 @@ async def analyze_placement(
             top_k=top_k,
         )
         return report
+
+
+@router.post("/generate-questions", response_model=GeneratedQuestionSet, status_code=status.HTTP_200_OK)
+async def generate_interview_questions(
+    resume_file: UploadFile = File(...),
+    jd_text: str = Form(...),
+    max_questions: int = Form(default=6),
+):
+    """
+    Generate role-specific technical and behavioral interview questions targeting candidate skill gaps and evidence.
+    """
+    if not resume_file.filename:
+        raise HTTPException(status_code=400, detail="Resume file must have a valid filename.")
+
+    resume_bytes = await resume_file.read()
+    if not resume_bytes:
+        raise HTTPException(status_code=400, detail="Uploaded resume file is empty.")
+
+    if not jd_text or not jd_text.strip():
+        raise HTTPException(status_code=400, detail="Job description text cannot be empty.")
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir)
+        resume_path = tmp_path / resume_file.filename
+        resume_path.write_bytes(resume_bytes)
+
+        pipeline = PlacementIntelligencePipeline()
+        report = pipeline.analyze(resume_path=resume_path, jd_text=jd_text)
+
+        generator = InterviewQuestionGenerator()
+        question_set = generator.generate_questions(report.fit_report, max_questions=max_questions)
+        return question_set
