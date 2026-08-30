@@ -45,18 +45,29 @@ class PDFExtractorAdapter:
 
     def extract_from_bytes(self, pdf_bytes: bytes, filename: str = "document.pdf") -> Tuple[RawExtractedText, List[str]]:
         """
-        Extract text from raw PDF bytes. Attempts pdfplumber first, falling back to pypdf.
+        Extract text from raw PDF bytes or plaintext files. Attempts pdfplumber first, falling back to pypdf.
         """
         warnings: List[str] = []
 
         if not pdf_bytes or len(pdf_bytes.strip()) == 0:
-            warnings.append("Provided PDF byte buffer is empty.")
+            warnings.append("Provided byte buffer is empty.")
             return RawExtractedText(
                 raw_text="",
                 page_count=0,
                 character_count=0,
                 extraction_method="empty_input",
                 pages_text=[],
+            ), warnings
+
+        # Handle plain text file byte streams
+        if filename.lower().endswith(".txt"):
+            text = pdf_bytes.decode("utf-8", errors="replace")
+            return RawExtractedText(
+                raw_text=text,
+                page_count=1,
+                character_count=len(text),
+                extraction_method="plaintext",
+                pages_text=[text],
             ), warnings
 
         # Attempt 1: pdfplumber
